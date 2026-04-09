@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
@@ -110,7 +110,24 @@
             border-bottom: 1px dashed var(--border-color);
             display: flex;
             justify-content: space-between;
+            align-items: center;
             font-size: 12px;
+        }
+
+        /* --- 터미널 복귀 버튼 스타일 --- */
+        .btn-return {
+            text-decoration: none;
+            color: var(--accent-color);
+            border: 1px solid var(--border-color);
+            padding: 5px 10px;
+            font-size: 10px;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            background: transparent;
+        }
+        .btn-return:hover {
+            background: var(--accent-color);
+            color: var(--bg-color);
         }
 
         .viewer-content {
@@ -163,7 +180,10 @@
     <main class="tech-box main-viewer">
         <div class="viewer-header">
             <span id="headerTitle">SELECT_MODULE...</span>
-            <span>STATUS: ACTIVE</span>
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <span>STATUS: ACTIVE</span>
+                <a href="https://hasi612.github.io/SuturaWave_Terminal/" class="btn-return">RETURN_TO_TERMINAL</a>
+            </div>
         </div>
         <div class="viewer-content">
             <div class="crosshair c1"></div>
@@ -177,10 +197,6 @@
 </div>
 
 <script>
-    // 💡 1. 대체 이미지 바구니 (이미지가 없는 번호에 임시로 들어갑니다)
-    const sampleImg = "https://via.placeholder.com/300/222222/ffffff?text=Preparing";
-
-    // 💡 2. 50개 모듈 데이터
     const moduleData = [
         { id: "001", name: "불안", src: "https://i.imgur.com/heIWqsv.png" },
         { id: "002", name: "우울", src: "https://i.imgur.com/FAWDgMC.png" },
@@ -239,7 +255,6 @@
     const headerTitle = document.getElementById('headerTitle');
     let activeItem = null;
 
-    // 리스트 생성
     moduleData.forEach((mod, index) => {
         const itemBox = document.createElement('div');
         itemBox.className = 'module-item';
