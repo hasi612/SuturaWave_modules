@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sutra-Terminal // Module Archive</title>
+    <style>
+        :root {
+            --bg-color: #0c0c0c;
+            --border-color: rgba(255, 255, 255, 0.3);
+            --accent-color: #ffffff;
+            --text-muted: rgba(255, 255, 255, 0.5);
+            --font-main: 'Courier New', Courier, monospace;
+        }
+
+        * { box-sizing: border-box; }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--accent-color);
+            font-family: var(--font-main);
+            height: 100vh;
+            overflow: hidden; /* 전체 페이지 스크롤 방지 */
+        }
+
+        /* 전체 레이아웃 컨테이너 */
+        .app-container {
+            display: flex;
+            height: 100vh;
+            padding: 20px;
+            gap: 20px;
+        }
+
+        /* 공통 박스 테크 데코레이션 */
+        .tech-box {
+            border: 1px solid var(--border-color);
+            background: rgba(255, 255, 255, 0.02);
+            position: relative;
+        }
+        .tech-box::before, .tech-box::after {
+            content: ''; position: absolute; width: 10px; height: 10px; border: 1px solid var(--accent-color);
+        }
+        .tech-box::before { top: -1px; left: -1px; border-right: none; border-bottom: none; }
+        .tech-box::after { bottom: -1px; right: -1px; border-left: none; border-top: none; }
+
+        /* ================= 왼쪽 리스트 영역 ================= */
+        .sidebar {
+            flex: 0 0 320px; /* 사이드바 고정 너비 */
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-header {
+            padding: 15px;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 14px;
+            letter-spacing: 2px;
+            font-weight: bold;
+        }
+
+        .module-list {
+            flex: 1;
+            overflow-y: auto; /* 세로 스크롤 가능 */
+            padding: 15px;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr); /* 2열 그리드 */
+            gap: 15px;
+        }
+
+        /* 커스텀 스크롤바 (테크니컬한 느낌) */
+        .module-list::-webkit-scrollbar { width: 6px; }
+        .module-list::-webkit-scrollbar-track { background: transparent; border-left: 1px solid var(--border-color); }
+        .module-list::-webkit-scrollbar-thumb { background: var(--border-color); }
+        .module-list::-webkit-scrollbar-thumb:hover { background: var(--accent-color); }
+
+        .module-item {
+            border: 1px dashed var(--border-color);
+            aspect-ratio: 1; /* 정사각형 비율 유지 */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+        .module-item img {
+            width: 60%;
+            height: 60%;
+            object-fit: contain;
+            filter: opacity(0.7);
+        }
+        .module-item-id {
+            position: absolute;
+            bottom: 5px;
+            font-size: 10px;
+            color: var(--text-muted);
+        }
+        .module-item:hover, .module-item.active {
+            border: 1px solid var(--accent-color);
+            background: rgba(255, 255, 255, 0.1);
+        }
+        .module-item:hover img, .module-item.active img {
+            filter: opacity(1);
+        }
+
+        /* ================= 오른쪽 메인 영역 ================= */
+        .main-viewer {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .viewer-header {
+            padding: 15px 20px;
+            border-bottom: 1px dashed var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+        }
+
+        .viewer-content {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* 선택된 이미지가 크게 보이는 곳 */
+        #mainImage {
+            max-width: 70%;
+            max-height: 70%;
+            object-fit: contain;
+            /* 테크니컬한 발광 효과 */
+            filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.4));
+            transition: opacity 0.3s ease;
+        }
+
+        .viewer-footer {
+            padding: 15px 20px;
+            border-top: 1px dashed var(--border-color);
+            font-size: 12px;
+            color: var(--text-muted);
+            text-align: right;
+        }
+
+        .crosshair {
+            position: absolute; width: 30px; height: 30px; border: 1px solid rgba(255,255,255,0.2);
+        }
+        .crosshair.c1 { top: 10%; left: 10%; border-right: none; border-bottom: none; }
+        .crosshair.c2 { bottom: 10%; right: 10%; border-left: none; border-top: none; }
+
+        /* ================= 모바일 반응형 (가로 768px 이하) ================= */
+        @media (max-width: 768px) {
+            .app-container {
+                flex-direction: column; /* 세로 배치로 변경 */
+                padding: 10px;
+                gap: 10px;
+            }
+            .sidebar {
+                flex: 0 0 150px; /* 모바일에서는 리스트 높이를 고정 */
+            }
+            .module-list {
+                display: flex; /* 가로 스크롤로 변경 */
+                overflow-x: auto;
+                overflow-y: hidden;
+                padding: 10px;
+                gap: 10px;
+            }
+            .module-list::-webkit-scrollbar { height: 4px; width: 4px; }
+            .module-item {
+                flex: 0 0 100px; /* 썸네일 너비 고정 */
+                height: 100px;
+            }
+            #mainImage { max-width: 85%; max-height: 85%; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    
+    <aside class="tech-box sidebar">
+        <div class="sidebar-header">
+            SYSTEM_MODULE_DB <span style="float:right;">[50]</span>
+        </div>
+        <div class="module-list" id="moduleContainer">
+            </div>
+    </aside>
+
+    <main class="tech-box main-viewer">
+        <div class="viewer-header">
+            <span id="headerTitle">MODULE_ID: #001</span>
+            <span>STATUS: ACTIVE</span>
+        </div>
+        
+        <div class="viewer-content">
+            <div class="crosshair c1"></div>
+            <div class="crosshair c2"></div>
+            
+            <img id="mainImage" src="" alt="Selected Module">
+        </div>
+
+        <div class="viewer-footer">
+            <span id="footerDesc">VIBRATION_SANCTUARY // PURIFIED_DATA_SET</span>
+        </div>
+    </main>
+
+</div>
+
+<script>
+    // ==============================================================
+    // 💡 모듈 데이터 설정 구역
+    // 본인이 만든 50개의 이미지 URL(경로)과 이름을 여기에 채워넣으세요.
+    // ==============================================================
+    
+    // 예시: 50개를 일일이 치기 힘드니, 배열을 자동으로 생성하는 방식입니다.
+    // 만약 이름이나 이미지가 각각 다 다르다면 아래 주석 처리된 형식처럼 50개를 직접 적어주시면 됩니다.
+    /*
+    const moduleData = [
+        { id: "001", name: "불안", src: "https://i.imgur.com/1T9a5Jf.png" },
+        { id: "002", name: "우울", src: "https://i.imgur.com/zSuofzN.png" },
+        // ... 50개 작성 ...
+    ];
+    */
+
+    // 임시로 이전에 쓰셨던 10개의 이미지와 빈 이미지를 반복해서 50개를 채우는 코드입니다. (실제 전시 때는 본인 이미지 경로로 바꾸세요!)
+    const sampleImages = [
+        'https://i.imgur.com/1T9a5Jf.png', 'https://i.imgur.com/zSuofzN.png', 
+        'https://i.imgur.com/OK1WTUT.png', 'https://i.imgur.com/m9DXJAs.png', 
+        'https://i.imgur.com/kiVPw9S.png', 'https://i.imgur.com/w6WZ8kd.png', 
+        'https://i.imgur.com/6TikNo6.png', 'https://i.imgur.com/aRZ6ecn.png', 
+        'https://i.imgur.com/pdhDOQW.png', 'https://i.imgur.com/nNaV2ND.png'
+    ];
+
+    const moduleData = [];
+    for (let i = 1; i <= 50; i++) {
+        let idString = String(i).padStart(3, '0'); // 1 -> "001", 12 -> "012"
+        moduleData.push({
+            id: idString,
+            name: `NOISE_DATA_${idString}`,
+            src: sampleImages[i % sampleImages.length] // 샘플 이미지 반복 적용
+        });
+    }
+
+    // ==============================================================
+    // 💡 렌더링 및 클릭 이벤트 로직
+    // ==============================================================
+    const container = document.getElementById('moduleContainer');
+    const mainImage = document.getElementById('mainImage');
+    const headerTitle = document.getElementById('headerTitle');
+    let activeItem = null;
+
+    // 50개 모듈 리스트 화면에 그리기
+    moduleData.forEach((mod, index) => {
+        const itemBox = document.createElement('div');
+        itemBox.className = 'module-item';
+        
+        // 클릭 시 이벤트
+        itemBox.onclick = () => selectModule(itemBox, mod);
+
+        const img = document.createElement('img');
+        img.src = mod.src;
+        img.loading = "lazy"; // 성능 최적화 (보일 때만 이미지 로딩)
+
+        const label = document.createElement('div');
+        label.className = 'module-item-id';
+        label.innerText = `#${mod.id}`;
+
+        itemBox.appendChild(img);
+        itemBox.appendChild(label);
+        container.appendChild(itemBox);
+
+        // 처음 로딩 시 1번 모듈을 메인 화면에 띄워줌
+        if (index === 0) {
+            selectModule(itemBox, mod);
+        }
+    });
+
+    // 모듈 클릭 시 메인 화면 변경 함수
+    function selectModule(element, data) {
+        // 기존 선택된 항목 테두리 해제
+        if (activeItem) {
+            activeItem.classList.remove('active');
+        }
+        // 클릭된 항목에 테두리 효과
+        element.classList.add('active');
+        activeItem = element;
+
+        // 메인 이미지 서서히 바뀌는 효과
+        mainImage.style.opacity = 0;
+        setTimeout(() => {
+            mainImage.src = data.src;
+            headerTitle.innerText = `MODULE_ID: #${data.id} // ${data.name}`;
+            mainImage.style.opacity = 1;
+        }, 150);
+    }
+</script>
+
+</body>
+</html>
